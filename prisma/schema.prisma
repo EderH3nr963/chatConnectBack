@@ -1,0 +1,86 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// =======================
+// USERS
+// =======================
+model User {
+    id            String @id @default(uuid()) @map("_id") @db.ObjectId
+    username      String @unique
+    email         String @unique
+    hash_password String
+
+    is_deleted Boolean @default(false)
+
+    chats    ChatMember[]
+    messages Message[]
+}
+
+// =======================
+// CHATS (conversa privada ou grupo)
+// =======================
+model Chat {
+    id        String   @id @default(auto()) @map("_id") @db.ObjectId
+    type      ChatType
+    title     String?
+    createdBy String   @db.ObjectId
+    createdAt DateTime @default(now())
+
+    members  ChatMember[]
+    messages Message[]
+}
+
+enum ChatType {
+    private
+    group
+}
+
+// =======================
+// CHAT MEMBERS (membros)
+// =======================
+model ChatMember {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+
+    chatId   String   @db.ObjectId
+    userId   String   @db.ObjectId
+    role     ChatRole @default(member)
+    joinedAt DateTime @default(now())
+
+    chat Chat @relation(fields: [chatId], references: [id])
+    user User @relation(fields: [userId], references: [id])
+}
+
+enum ChatRole {
+    member
+    admin
+}
+
+// =======================
+// MESSAGES (mensagens)
+// =======================
+model Message {
+    id String @id @default(auto()) @map("_id") @db.ObjectId
+
+    chatId     String   @db.ObjectId
+    senderId   String   @db.ObjectId
+    content    String?
+    attachment String?
+    createdAt  DateTime @default(now())
+    updatedAt  DateTime @updatedAt
+
+    chat   Chat @relation(fields: [chatId], references: [id])
+    sender User @relation(fields: [senderId], references: [id])
+}
