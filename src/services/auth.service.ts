@@ -4,7 +4,6 @@ import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/user.repository";
 import AppError from "../utils/AppError";
 import { removePassword } from "../utils/removePassword";
-import type { UserWithoutPassword } from "../types/user";
 
 const SECRET_KEY = process.env.JWT_SECRET || "chave_super_secreta";
 
@@ -12,11 +11,6 @@ interface RegisterParamaters {
   username: string;
   email: string;
   password: string;
-}
-
-interface LoginReturn {
-  user: UserWithoutPassword;
-  token: string;
 }
 
 class AuthService {
