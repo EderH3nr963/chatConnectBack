@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { UserRepository } from "../repositories/user.repository";
 import AppError from "../utils/AppError";
 import type { UserWithoutPassword } from "../types/user";
+import { sendEmail } from "../utils/sendEmail";
 
 const SECRET_KEY = process.env.JWT_SECRET || "chave_super_secreta";
 
@@ -35,14 +36,45 @@ class UserService {
     const emailExists = await UserRepository.findByEmail(newEmail);
     if (emailExists) throw new AppError("Este email já está em uso", 409);
 
+    // Token enviado ao novo email
     const token = jwt.sign({ userId, newEmail }, SECRET_KEY, {
       expiresIn: "5m",
     });
 
-    // Funcao para enviar email com a url de confimação de email junto ao token jwt como parametro
+    const confirmUrl = `${process.env.FRONTEND_URL}/confirm-new-email?token=${token}`;
+
+    const html = `
+      <h2>Confirmação de Novo Email</h2>
+      <p>Você solicitou a alteração do seu email no <strong>Chat Connect</strong>.</p>
+      
+      <p>Para confirmar seu novo email (<strong>${newEmail}</strong>), clique no botão abaixo:</p>
+  
+      <a href="${confirmUrl}" style="
+        background: #4f46e5;
+        color: white;
+        padding: 10px 15px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: bold;
+      ">Confirmar novo email</a>
+  
+      <p style="margin-top: 20px;">
+        Caso você não tenha solicitado essa alteração, basta ignorar este email.
+      </p>
+  
+      <p>Este link expira em <strong>5 minutos</strong>.</p>
+    `;
+
+    // Envia para o *novo email* para confirmar que ele é válido
+    await sendEmail(
+      newEmail,
+      "Confirmação de novo email - Chat Connect",
+      html
+    );
 
     return true;
   }
+
 
   static async updateEmail(
     userId: string,
