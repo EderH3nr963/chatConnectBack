@@ -152,7 +152,7 @@ Autentica um usuário e retorna token JWT.
 }
 ```
 
-#### `GET /api/v1/auth/request-update-password`
+#### `POST /api/v1/auth/request-update-password`
 
 Solicita redefinição de senha (envia email com token).
 
@@ -199,7 +199,7 @@ Obtém dados do usuário autenticado.
 }
 ```
 
-#### `GET /api/v1/user/me/request-update-email`
+#### `POST /api/v1/user/me/request-update-email`
 
 Solicita atualização de email (envia token por email).
 
